@@ -23,11 +23,12 @@ h2{font-size:17px;margin-top:15px;color:#e2e8f0}
 .form-grid input, .form-grid select{padding:10px;border-radius:6px;border:1px solid #334358;background:#0d1522;color:white;font-size:13px;outline:none}
 .form-grid input:focus, .form-grid select:focus{border-color:#45b8f5}
 .full-width{grid-column:1 / -1}
+.btn-action{background:#3b82f6;color:white;font-weight:bold;padding:10px;border:0;border-radius:6px;cursor:pointer;font-size:12px}
 .btn-add{background:#10b981;color:#042f2e;font-weight:bold;padding:12px;border:0;border-radius:6px;cursor:pointer;margin-top:8px;width:100%}
 
-.search-box{margin:10px 0}
-.search-box input{width:100%;padding:12px;border-radius:8px;border:1px solid #3b4d66;background:#182638;color:white;font-size:14px;outline:none}
-.search-box input:focus{border-color:#45b8f5}
+.search-container{display:flex;gap:8px;margin:10px 0}
+.search-container input{flex:1;padding:12px;border-radius:8px;border:1px solid #3b4d66;background:#182638;color:white;font-size:14px;outline:none}
+.search-container input:focus{border-color:#45b8f5}
 
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 button.filter{border:0;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer;background:#27364b;color:white;font-size:12px}
@@ -67,24 +68,26 @@ footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
 <h3>➕ Mapear Novo Terreno</h3>
 <form id="addForm" onsubmit="adicionarTerreno(event)" class="form-grid">
 <input type="text" id="addNome" placeholder="Nome / Identificação da Área" required class="full-width">
-<input type="text" id="addBairro" placeholder="Bairro (ex: Tristeza, Ipanema)" required>
+<input type="text" id="addEndereco" placeholder="Endereço / Rua / Bairro (ex: Av. Juca Batista, Ipanema)" class="full-width" required>
+<button type="button" class="btn-action full-width" onclick="buscarCoordenadasForm()">📍 Buscar Coordenadas Automaticamente</button>
 <input type="text" id="addArea" placeholder="Área (ex: 3.500 m²)" required>
 <select id="addTipo" required>
 <option value="premium">Alto Padrão</option>
 <option value="mcmv">Minha Casa Minha Vida (MCMV)</option>
 </select>
-<input type="number" step="any" id="addLat" placeholder="Latitude (ex: -30.115)" required>
-<input type="number" step="any" id="addLon" placeholder="Longitude (ex: -51.250)" required>
+<input type="number" step="any" id="addLat" placeholder="Latitude" required>
+<input type="number" step="any" id="addLon" placeholder="Longitude" required>
 <input type="text" id="addLink" placeholder="Link do anúncio / Fonte (opcional)" class="full-width">
 <input type="text" id="addDesc" placeholder="Observações de prospecção / Zoneamento" class="full-width">
 <button type="submit" class="btn-add">Mapear Área no Sistema</button>
 </form>
 </div>
 
-<h2>Prospecção & Busca por Bairro</h2>
+<h2>Navegar & Ir para Qualquer Lugar</h2>
 
-<div class="search-box">
-<input type="text" id="searchInput" onkeyup="filterData()" placeholder="🔍 Pesquisar por bairro (ex: Ipanema, Restinga, Cavalhada)...">
+<div class="search-container">
+<input type="text" id="placeInput" placeholder="🔍 Digite qualquer rua ou lugar (ex: Juca Batista, Tristeza)...">
+<button class="btn-action" onclick="buscarLugarNoMapa()">Buscar Lugar</button>
 </div>
 
 <div class="filters">
@@ -124,6 +127,8 @@ L.tileLayer(
 'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
 {attribution:'Labels © Esri',maxZoom:19}
 ).addTo(map);
+
+let searchMarker = null;
 
 let terrenos=[
 {
@@ -176,17 +181,14 @@ markers.forEach(m=>map.removeLayer(m));
 markers=[];
 const results=document.getElementById('results');
 const counterText=document.getElementById('counterText');
-const searchText=document.getElementById('searchInput').value.toLowerCase().trim();
 
 results.innerHTML='';
 
 const filtered=terrenos.filter(t=>{
-const matchCategory = (categoryFilter==='both'||t.tipo===categoryFilter);
-const matchSearch = t.bairro.toLowerCase().includes(searchText) || t.nome.toLowerCase().includes(searchText);
-return matchCategory && matchSearch;
+return (categoryFilter==='both'||t.tipo===categoryFilter);
 });
 
-counterText.innerText = `${filtered.length} área(s) localizada(s)`;
+counterText.innerText = `${filtered.length} área(s) cadastrada(s)`;
 
 filtered.forEach(t=>{
 const color=t.tipo==='premium'?'#299cff':'#18c77a';
@@ -223,10 +225,6 @@ window.scrollTo({top: 300, behavior: 'smooth'});
 };
 results.appendChild(card);
 });
-
-if(filtered.length===0){
-results.innerHTML='<p style="color:#788b9e;padding:10px 0;">Nenhuma área cadastrada para este bairro ou filtro.</p>';
-}
 }
 
 function setCategory(value,button){
@@ -236,8 +234,64 @@ button.classList.add('active');
 render();
 }
 
-function filterData(){
-render();
+// BUSCA QUALQUER LUGAR/RUA EM PORTO ALEGRE
+async function buscarLugarNoMapa(){
+const input = document.getElementById('placeInput').value.trim();
+if(!input){
+alert('Digite uma rua, bairro ou local para buscar.');
+return;
+}
+
+const query = encodeURIComponent(input + ', Porto Alegre, RS, Brasil');
+const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
+
+try{
+const res = await fetch(url);
+const data = await res.json();
+
+if(data && data.length > 0){
+const lat = parseFloat(data[0].lat);
+const lon = parseFloat(data[0].lon);
+
+map.setView([lat, lon], 15);
+
+if(searchMarker) map.removeLayer(searchMarker);
+searchMarker = L.marker([lat, lon]).addTo(map)
+.bindPopup(`<b>Local pesquisado:</b><br>${data[0].display_name}`)
+.openPopup();
+} else {
+alert('Local não encontrado em Porto Alegre. Tente detalhar mais a busca.');
+}
+}catch(err){
+alert('Erro ao buscar o local. Tente novamente.');
+}
+}
+
+// BUSCA COORDENADAS AUTOMÁTICAS PARA O CADASTRO
+async function buscarCoordenadasForm(){
+const endereco = document.getElementById('addEndereco').value.trim();
+if(!endereco){
+alert('Digite o endereço/bairro primeiro.');
+return;
+}
+
+const query = encodeURIComponent(endereco + ', Porto Alegre, RS, Brasil');
+const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
+
+try{
+const res = await fetch(url);
+const data = await res.json();
+
+if(data && data.length > 0){
+document.getElementById('addLat').value = data[0].lat;
+document.getElementById('addLon').value = data[0].lon;
+alert('Coordenadas encontradas e preenchidas!');
+} else {
+alert('Não foi possível localizar as coordenadas desse endereço.');
+}
+}catch(err){
+alert('Erro ao buscar coordenadas.');
+}
 }
 
 function adicionarTerreno(e){
@@ -245,7 +299,7 @@ e.preventDefault();
 const novo = {
 id: Date.now(),
 nome: document.getElementById('addNome').value,
-bairro: document.getElementById('addBairro').value,
+bairro: document.getElementById('addEndereco').value,
 area: document.getElementById('addArea').value,
 tipo: document.getElementById('addTipo').value,
 lat: parseFloat(document.getElementById('addLat').value),
@@ -266,3 +320,4 @@ render();
 </script>
 </body>
 </html>
+
