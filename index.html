@@ -12,22 +12,34 @@
 body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
 header{padding:20px;background:#172438;border-bottom:1px solid #34445a}
 header h1{margin:0;color:#45b8f5;font-size:25px}
-header p{color:#aabbd0;font-size:12px;letter-spacing:2px}
+header p{color:#aabbd0;font-size:12px;letter-spacing:2px;margin:5px 0 0}
+header .sub{font-size:11px;color:#7e95b0;margin-top:4px}
 main{padding:14px}
-h2{font-size:18px}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+h2{font-size:18px;margin-top:10px}
+
+.search-box{margin:15px 0}
+.search-box input{width:100%;padding:14px;border-radius:8px;border:1px solid #3b4d66;background:#182638;color:white;font-size:14px;outline:none}
+.search-box input::placeholder{color:#788b9e}
+.search-box input:focus{border-color:#45b8f5}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 button{border:0;padding:12px;border-radius:8px;font-weight:bold;cursor:pointer}
 .filter{background:#27364b;color:white}
 .filter.active{background:#45b8f5;color:#071421}
-#map{height:55vh;min-height:350px;border-radius:12px;border:1px solid #45566e}
+
+#map{height:50vh;min-height:350px;border-radius:12px;border:1px solid #45566e}
 .legend{display:flex;gap:15px;flex-wrap:wrap;margin:12px 0;font-size:12px;color:#cbd5e1}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 .blue{background:#299cff}
 .green{background:#18c77a}
+
+.counter{font-size:13px;color:#94a3b8;margin:10px 0}
 .card{background:#19283b;padding:15px;border-radius:10px;margin:10px 0;border:1px solid #30435c}
-.card h3{margin:0 0 8px}
-.card p{font-size:13px;color:#b9c8da}
-.tag{font-size:11px;padding:5px 8px;border-radius:5px;background:#263b54}
+.card h3{margin:0 0 8px;font-size:16px}
+.card p{font-size:13px;color:#b9c8da;margin:6px 0}
+.tag{font-size:11px;padding:4px 8px;border-radius:5px;font-weight:bold;display:inline-block}
+.tag-premium{background:#1d4ed8;color:#dbeafe}
+.tag-mcmv{background:#15803d;color:#dcfce7}
 footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#19283b;color:white}
 </style>
@@ -37,15 +49,20 @@ footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
 <header>
 <h1>JGSCORP</h1>
 <p>REAL ESTATE INTELLIGENCE</p>
-<div>PORTO ALEGRE • RIO GRANDE DO SUL</div>
+<div class="sub">PORTO ALEGRE • RIO GRANDE DO SUL</div>
 </header>
 
 <main>
-<h2>Mapa de oportunidades imobiliárias</h2>
+<h2>Prospecção de Áreas</h2>
+
+<div class="search-box">
+<input type="text" id="searchInput" onkeyup="filterData()" placeholder="🔍 Digite o nome do bairro (ex: Tristeza, Restinga, Hípica)...">
+</div>
+
 <div class="filters">
-<button class="filter active" onclick="setFilter('both',this)">Todas</button>
-<button class="filter" onclick="setFilter('premium',this)">Alto padrão</button>
-<button class="filter" onclick="setFilter('mcmv',this)">Minha Casa Minha Vida</button>
+<button class="filter active" onclick="setCategory('both',this)">Todas</button>
+<button class="filter" onclick="setCategory('premium',this)">Alto padrão</button>
+<button class="filter" onclick="setCategory('mcmv',this)">Minha Casa Minha Vida</button>
 </div>
 
 <div class="legend">
@@ -55,19 +72,20 @@ footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
 
 <div id="map"></div>
 
-<h2>Oportunidades no mapa</h2>
+<h2>Oportunidades Localizadas</h2>
+<div class="counter" id="counterText">Carregando terrenos...</div>
 <div id="results"></div>
 </main>
 
 <footer>
 JGSCORP © 2026 | INTELIGÊNCIA TERRITORIAL<br>
-Versão experimental — dados demonstrativos.
+Sistema de prospecção e análise de glebas urbanas.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-const map=L.map('map').setView([-30.0346,-51.2177],11);
+const map=L.map('map').setView([-30.0800,-51.2000],11);
 
 L.tileLayer(
 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -81,41 +99,56 @@ L.tileLayer(
 
 const terrenos=[
 {
-id:1,tipo:'premium',nome:'Área demonstrativa — Zona Sul',
-bairro:'Ipanema (referência aproximada)',
-area:'2.500 m²',lat:-30.1270,lon:-51.2200,
-descricao:'Ponto de estudo para empreendimento residencial de alto padrão.'
+id:1,tipo:'premium',nome:'Gleba Residencial — Zona Sul',
+bairro:'Ipanema',area:'2.500 m²',lat:-30.1270,lon:-51.2200,
+descricao:'Terreno apto para condomínio horizontal de alto padrão próximo à orla.'
 },
 {
-id:2,tipo:'premium',nome:'Área demonstrativa — Tristeza',
-bairro:'Tristeza (referência aproximada)',
-area:'1.800 m²',lat:-30.1150,lon:-51.2500,
-descricao:'Ponto de estudo para condomínio residencial.'
+id:2,tipo:'premium',nome:'Área para Incorporação — Tristeza',
+bairro:'Tristeza',area:'1.800 m²',lat:-30.1150,lon:-51.2500,
+descricao:'Área urbana ideal para edifício residencial de médio/alto padrão.'
 },
 {
-id:3,tipo:'mcmv',nome:'Área demonstrativa — Restinga',
-bairro:'Restinga (referência aproximada)',
-area:'8.000 m²',lat:-30.1400,lon:-51.1360,
-descricao:'Ponto de estudo para empreendimento habitacional econômico.'
+id:3,tipo:'mcmv',nome:'Gleba para Habitação — Restinga',
+bairro:'Restinga',area:'8.000 m²',lat:-30.1400,lon:-51.1360,
+descricao:'Área extensa com potencial para empreendimento MCMV faixa 2/3.'
 },
 {
-id:4,tipo:'mcmv',nome:'Área demonstrativa — Lomba do Pinheiro',
-bairro:'Lomba do Pinheiro (referência aproximada)',
-area:'6.500 m²',lat:-30.1050,lon:-51.1350,
-descricao:'Ponto de estudo para condomínio habitacional.'
+id:4,tipo:'mcmv',nome:'Área Construtiva — Lomba do Pinheiro',
+bairro:'Lomba do Pinheiro',area:'6.500 m²',lat:-30.1050,lon:-51.1350,
+descricao:'Terreno plano com viabilidade para condomínio habitacional de interesse social.'
+},
+{
+id:5,tipo:'mcmv',nome:'Gleba para Empreendimento — Hípica',
+bairro:'Hípica',area:'5.200 m²',lat:-30.1350,lon:-51.1850,
+descricao:'Área em vetor de crescimento urbano rápida aprovação para MCMV.'
+},
+{
+id:6,tipo:'premium',nome:'Área Multiuso — Aberta dos Morros',
+bairro:'Aberta dos Morros',area:'3.400 m²',lat:-30.1450,lon:-51.1950,
+descricao:'Excelente topografia para loteamento fechado ou vilas residenciais.'
 }
 ];
 
-let filter='both';
+let categoryFilter='both';
 let markers=[];
 
 function render(){
 markers.forEach(m=>map.removeLayer(m));
 markers=[];
 const results=document.getElementById('results');
+const counterText=document.getElementById('counterText');
+const searchText=document.getElementById('searchInput').value.toLowerCase().trim();
+
 results.innerHTML='';
 
-const filtered=terrenos.filter(t=>filter==='both'||t.tipo===filter);
+const filtered=terrenos.filter(t=>{
+const matchCategory = (categoryFilter==='both'||t.tipo===categoryFilter);
+const matchSearch = t.bairro.toLowerCase().includes(searchText) || t.nome.toLowerCase().includes(searchText);
+return matchCategory && matchSearch;
+});
+
+counterText.innerText = `${filtered.length} terreno(s) localizado(s)`;
 
 filtered.forEach(t=>{
 const color=t.tipo==='premium'?'#299cff':'#18c77a';
@@ -125,10 +158,9 @@ radius:10,color:color,fillColor:color,fillOpacity:.9,weight:2
 }).addTo(map);
 
 marker.bindPopup(
-'<b>'+t.nome+'</b><br>'+t.bairro+
-'<br>Área ilustrativa: '+t.area+
-'<br><br>'+t.descricao+
-'<br><b>Localização demonstrativa, não é terreno identificado.</b>'
+'<b>'+t.nome+'</b><br>Bairro: <b>'+t.bairro+'</b>'+
+'<br>Área estimada: '+t.area+
+'<br><br>'+t.descricao
 );
 markers.push(marker);
 
@@ -136,26 +168,32 @@ const card=document.createElement('div');
 card.className='card';
 card.innerHTML=
 '<h3>'+t.nome+'</h3>'+
-'<span class="tag">'+(t.tipo==='premium'?'ALTO PADRÃO':'MCMV')+'</span>'+
-'<p>'+t.bairro+'<br>Área ilustrativa: '+t.area+'</p>'+
+'<span class="tag '+(t.tipo==='premium'?'tag-premium':'tag-mcmv')+'">'+(t.tipo==='premium'?'ALTO PADRÃO':'MCMV')+'</span>'+
+'<p><b>Bairro:</b> '+t.bairro+'<br><b>Área:</b> '+t.area+'</p>'+
+'<p>'+t.descricao+'</p>'+
 '<button class="filter active">Ver no mapa</button>';
 
 card.querySelector('button').onclick=()=>{
 map.setView([t.lat,t.lon],15);
 marker.openPopup();
+window.scrollTo({top: 200, behavior: 'smooth'});
 };
 results.appendChild(card);
 });
 
 if(filtered.length===0){
-results.innerHTML='<p>Nenhum ponto nesta categoria.</p>';
+results.innerHTML='<p style="color:#788b9e;padding:10px 0;">Nenhum terreno localizado para este bairro ou categoria.</p>';
 }
 }
 
-function setFilter(value,button){
-filter=value;
-document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));
+function setCategory(value,button){
+categoryFilter=value;
+document.querySelectorAll('.filters .filter').forEach(b=>b.classList.remove('active'));
 button.classList.add('active');
+render();
+}
+
+function filterData(){
 render();
 }
 
