@@ -54,7 +54,9 @@ button.filter.active{background:#38bdf8;color:#0f172a}
 .tag{font-size:10px;padding:3px 7px;border-radius:4px;font-weight:bold;display:inline-block;margin-bottom:6px}
 .tag-premium{background:#1e40af;color:#dbeafe}
 .tag-mcmv{background:#15803d;color:#dcfce7}
-.btn-map{background:#1e2d45;color:white;border:1px solid #3b82f6;padding:8px 12px;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:8px;font-size:12px;width:100%}
+.btn-row{display:flex;gap:8px;margin-top:8px}
+.btn-map{background:#1e2d45;color:white;border:1px solid #3b82f6;padding:8px 12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px;flex:1;text-align:center;text-decoration:none}
+.btn-gmaps{background:#15803d;color:white;border:1px solid #22c55e;padding:8px 12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px;flex:1;text-align:center;text-decoration:none}
 
 footer{text-align:center;padding:20px;color:#64748b;font-size:11px}
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#131f33;color:white}
@@ -152,7 +154,6 @@ attribution:'Labels © Esri',maxZoom:19
 
 let searchMarker = null;
 
-// BANCO DE DADOS BASE
 const dadosIniciais = [
 {id:1,tipo:'premium',nome:'Gleba Orla Zona Sul',bairro:'Ipanema',areaM2:2500,valorPedido:3500000,vgvEstimado:28000000,lat:-30.1270,lon:-51.2200,link:'',descricao:'Excelente visibilidade para condomínio horizontal fechado ou condomínio de alto padrão.'},
 {id:2,tipo:'premium',nome:'Corredor Comercial Juca Batista',bairro:'Ipanema / Juca Batista',areaM2:3200,valorPedido:4200000,vgvEstimado:35000000,lat:-30.1310,lon:-51.2150,link:'',descricao:'Frente comercial ampla ideal para empreendimento residencial misto no eixo Juca Batista.'},
@@ -162,7 +163,6 @@ const dadosIniciais = [
 {id:6,tipo:'mcmv',nome:'Eixo Hípica / Juca Batista',bairro:'Hípica',areaM2:5200,valorPedido:2400000,vgvEstimado:24000000,lat:-30.1350,lon:-51.1850,link:'',descricao:'Eixo de forte vetor de crescimento residencial na Zona Sul.'}
 ];
 
-// LEITURA DO LOCALSTORAGE
 let terrenos = JSON.parse(localStorage.getItem('jgscorp_terrenos')) || dadosIniciais;
 
 let categoryFilter='both';
@@ -202,15 +202,17 @@ counterText.innerText = `${filtered.length} área(s) no portfólio selecionado`;
 
 filtered.forEach(t=>{
 const color=t.tipo==='premium'?'#38bdf8':'#22c55e';
+const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lon}`;
 
 const marker=L.circleMarker([t.lat,t.lon],{
 radius:10,color:color,fillColor:color,fillOpacity:.9,weight:2
 }).addTo(map);
 
 let popupContent = `<b>${t.nome}</b><br>Bairro: <b>${t.bairro}</b><br>Área: <b>${t.areaM2} m²</b><br>VGV Est.: <b>${formatarMoeda(t.vgvEstimado)}</b><br><br>${t.descricao}`;
+popupContent += `<br><br><a href="${gmapsUrl}" target="_blank" style="color:#22c55e;font-weight:bold">🗺️ Abrir no Google Maps</a>`;
 
 if(t.link){
-popupContent += `<br><br><a href="${t.link}" target="_blank" style="color:#38bdf8">🔗 Ver Anúncio Original</a>`;
+popupContent += `<br><a href="${t.link}" target="_blank" style="color:#38bdf8">🔗 Ver Anúncio Original</a>`;
 }
 
 marker.bindPopup(popupContent);
@@ -228,20 +230,23 @@ card.innerHTML= `
 </div>
 <p>${t.descricao}</p>
 ${t.link ? `<p><a href="${t.link}" target="_blank" style="color:#38bdf8;font-size:12px;text-decoration:none">🔗 Acessar Link da Fonte</a></p>` : ''}
-<button class="btn-map">Focar Terreno no Mapa</button>
+<div class="btn-row">
+<button class="btn-map" onclick="focarMapa(${t.lat}, ${t.lon})">Focar no App</button>
+<a href="${gmapsUrl}" target="_blank" class="btn-gmaps">Abrir Google Maps</a>
+</div>
 `;
 
-card.querySelector('button').onclick=()=>{
-map.setView([t.lat,t.lon],16);
-marker.openPopup();
-window.scrollTo({top: 400, behavior: 'smooth'});
-};
 results.appendChild(card);
 });
 
 if(filtered.length===0){
 results.innerHTML='<p style="color:#64748b;padding:10px 0;">Nenhuma área encontrada para os critérios selecionados.</p>';
 }
+}
+
+function focarMapa(lat, lon){
+map.setView([lat, lon], 16);
+window.scrollTo({top: 400, behavior: 'smooth'});
 }
 
 function setCategory(value,button){
@@ -277,7 +282,7 @@ map.setView([lat, lon], 15);
 
 if(searchMarker) map.removeLayer(searchMarker);
 searchMarker = L.marker([lat, lon]).addTo(map)
-.bindPopup(`<b>Local Pesquisado:</b><br>${data[0].display_name}`)
+.bindPopup(`<b>Local Pesquisado:</b><br>${data[0].display_name}<br><br><a href="https://www.google.com/maps/search/?api=1&query=${lat},${lon}" target="_blank" style="color:#22c55e;font-weight:bold">🗺️ Abrir no Google Maps</a>`)
 .openPopup();
 }
 }catch(err){
@@ -304,7 +309,7 @@ document.getElementById('addLat').value = data[0].lat;
 document.getElementById('addLon').value = data[0].lon;
 alert('Coordenadas capturadas com sucesso!');
 } else {
-alert('Não foi possível localizar as coordenadas. Preencha manualmente se necessário.');
+alert('Não foi possível localizar as coordenadas.');
 }
 }catch(err){
 alert('Erro na busca de coordenadas.');
@@ -318,7 +323,6 @@ const areaNum = parseFloat(document.getElementById('addAreaM2').value) || 0;
 const valorPed = parseFloat(document.getElementById('addValorPedido').value) || 0;
 let vgvNum = parseFloat(document.getElementById('addVgvEstimado').value) || 0;
 
-// Cálculo estimativo automatizado caso VGV não seja informado
 if(!vgvNum && areaNum > 0){
 const m2VgvMedio = document.getElementById('addTipo').value === 'premium' ? 8000 : 4000;
 vgvNum = areaNum * m2VgvMedio;
