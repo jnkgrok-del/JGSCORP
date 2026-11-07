@@ -86,7 +86,7 @@ footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
 <h2>Navegar & Ir para Qualquer Lugar</h2>
 
 <div class="search-container">
-<input type="text" id="placeInput" placeholder="🔍 Digite qualquer rua ou lugar (ex: Juca Batista, Tristeza)...">
+<input type="text" id="placeInput" onkeypress="if(event.key==='Enter') buscarLugarNoMapa()" placeholder="🔍 Digite qualquer rua ou bairro (ex: Juca Batista, Tristeza)...">
 <button class="btn-action" onclick="buscarLugarNoMapa()">Buscar Lugar</button>
 </div>
 
@@ -137,43 +137,49 @@ bairro:'Ipanema',area:'2.500 m²',lat:-30.1270,lon:-51.2200,link:'',
 descricao:'Apto para condomínio horizontal de alto padrão com vista para o Guaíba.'
 },
 {
-id:2,tipo:'premium',nome:'Área de Incorporação — Tristeza',
+id:2,tipo:'premium',nome:'Gleba Comercial/Residencial — Av. Juca Batista',
+bairro:'Ipanema / Juca Batista',area:'3.200 m²',lat:-30.1310,lon:-51.2150,link:'',
+descricao:'Excelente frente comercial na Av. Juca Batista ideal para empreendimento misto.'
+},
+{
+id:3,tipo:'premium',nome:'Área de Incorporação — Tristeza',
 bairro:'Tristeza',area:'1.800 m²',lat:-30.1150,lon:-51.2500,link:'',
 descricao:'Área urbana ideal para edifício residencial de médio/alto padrão.'
 },
 {
-id:3,tipo:'mcmv',nome:'Gleba Extensa — Restinga',
+id:4,tipo:'mcmv',nome:'Gleba Extensa — Restinga',
 bairro:'Restinga',area:'8.000 m²',lat:-30.1400,lon:-51.1360,link:'',
 descricao:'Área extensa com potencial para grande condomínio MCMV.'
 },
 {
-id:4,tipo:'mcmv',nome:'Área Construtiva — Lomba do Pinheiro',
+id:5,tipo:'mcmv',nome:'Área Construtiva — Lomba do Pinheiro',
 bairro:'Lomba do Pinheiro',area:'6.500 m²',lat:-30.1050,lon:-51.1350,link:'',
 descricao:'Terreno plano com viabilidade para habitação de interesse social.'
 },
 {
-id:5,tipo:'mcmv',nome:'Gleba Urbana — Hípica',
+id:6,tipo:'mcmv',nome:'Gleba Urbana — Hípica / Juca Batista',
 bairro:'Hípica',area:'5.200 m²',lat:-30.1350,lon:-51.1850,link:'',
-descricao:'Eixo de expansão urbana acelerada na Zona Sul.'
+descricao:'Eixo de expansão urbana acelerada no corredor da Juca Batista.'
 },
 {
-id:6,tipo:'premium',nome:'Área Residencial — Aberta dos Morros',
+id:7,tipo:'premium',nome:'Área Residencial — Aberta dos Morros',
 bairro:'Aberta dos Morros',area:'3.400 m²',lat:-30.1450,lon:-51.1950,link:'',
 descricao:'Excelente topografia para vilas residenciais fechadas.'
 },
 {
-id:7,tipo:'premium',nome:'Área de Estudo — Cavalhada',
+id:8,tipo:'premium',nome:'Área de Estudo — Cavalhada',
 bairro:'Cavalhada',area:'2.100 m²',lat:-30.1080,lon:-51.2250,link:'',
 descricao:'Frente para corredor comercial com viabilidade mista.'
 },
 {
-id:8,tipo:'mcmv',nome:'Terreno de Esquina — Otto Niemeyer',
+id:9,tipo:'mcmv',nome:'Terreno de Esquina — Otto Niemeyer',
 bairro:'Otto Niemeyer',area:'1.950 m²',lat:-30.1010,lon:-51.2320,link:'',
 descricao:'Excelente localização para condomínio residencial vertical econômico.'
 }
 ];
 
 let categoryFilter='both';
+let textSearchFilter='';
 let markers=[];
 
 function render(){
@@ -185,10 +191,15 @@ const counterText=document.getElementById('counterText');
 results.innerHTML='';
 
 const filtered=terrenos.filter(t=>{
-return (categoryFilter==='both'||t.tipo===categoryFilter);
+const matchCategory = (categoryFilter==='both'||t.tipo===categoryFilter);
+const matchText = textSearchFilter === '' || 
+t.bairro.toLowerCase().includes(textSearchFilter) || 
+t.nome.toLowerCase().includes(textSearchFilter) ||
+t.descricao.toLowerCase().includes(textSearchFilter);
+return matchCategory && matchText;
 });
 
-counterText.innerText = `${filtered.length} área(s) cadastrada(s)`;
+counterText.innerText = `${filtered.length} área(s) localizada(s)`;
 
 filtered.forEach(t=>{
 const color=t.tipo==='premium'?'#299cff':'#18c77a';
@@ -225,6 +236,10 @@ window.scrollTo({top: 300, behavior: 'smooth'});
 };
 results.appendChild(card);
 });
+
+if(filtered.length===0){
+results.innerHTML='<p style="color:#788b9e;padding:10px 0;">Nenhum terreno cadastrado nesta região ou filtro.</p>';
+}
 }
 
 function setCategory(value,button){
@@ -234,40 +249,42 @@ button.classList.add('active');
 render();
 }
 
-// BUSCA QUALQUER LUGAR/RUA EM PORTO ALEGRE
 async function buscarLugarNoMapa(){
 const input = document.getElementById('placeInput').value.trim();
 if(!input){
-alert('Digite uma rua, bairro ou local para buscar.');
+textSearchFilter = '';
+render();
 return;
 }
+
+textSearchFilter = input.toLowerCase();
+render();
 
 const query = encodeURIComponent(input + ', Porto Alegre, RS, Brasil');
 const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
 
 try{
-const res = await fetch(url);
+const res = await fetch(url, {
+headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
+});
 const data = await res.json();
 
 if(data && data.length > 0){
 const lat = parseFloat(data[0].lat);
 const lon = parseFloat(data[0].lon);
 
-map.setView([lat, lon], 15);
+map.setView([lat, lon], 14);
 
 if(searchMarker) map.removeLayer(searchMarker);
 searchMarker = L.marker([lat, lon]).addTo(map)
-.bindPopup(`<b>Local pesquisado:</b><br>${data[0].display_name}`)
+.bindPopup(`<b>Ponto de Referência Pesquisado:</b><br>${data[0].display_name}`)
 .openPopup();
-} else {
-alert('Local não encontrado em Porto Alegre. Tente detalhar mais a busca.');
 }
 }catch(err){
-alert('Erro ao buscar o local. Tente novamente.');
+console.log('Erro na geocodificação:', err);
 }
 }
 
-// BUSCA COORDENADAS AUTOMÁTICAS PARA O CADASTRO
 async function buscarCoordenadasForm(){
 const endereco = document.getElementById('addEndereco').value.trim();
 if(!endereco){
@@ -279,7 +296,9 @@ const query = encodeURIComponent(endereco + ', Porto Alegre, RS, Brasil');
 const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
 
 try{
-const res = await fetch(url);
+const res = await fetch(url, {
+headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
+});
 const data = await res.json();
 
 if(data && data.length > 0){
@@ -310,6 +329,7 @@ descricao: document.getElementById('addDesc').value || 'Área adicionada via pro
 
 terrenos.unshift(novo);
 document.getElementById('addForm').reset();
+textSearchFilter = '';
 render();
 
 map.setView([novo.lat, novo.lon], 15);
@@ -320,4 +340,3 @@ render();
 </script>
 </body>
 </html>
-
