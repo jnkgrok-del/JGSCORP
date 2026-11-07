@@ -3,95 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JGSCORP | Inteligência Imobiliária & Prospecção</title>
+<title>JGSCORP | Real Estate Intelligence & Prospecção</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
-header{padding:20px;background:#172438;border-bottom:1px solid #34445a}
-header h1{margin:0;color:#45b8f5;font-size:25px}
-header p{color:#aabbd0;font-size:12px;letter-spacing:2px;margin:5px 0 0}
-header .sub{font-size:11px;color:#7e95b0;margin-top:4px}
+body{margin:0;background:#0b1320;color:#e2e8f0;font-family:Arial,sans-serif}
+header{padding:20px;background:#131f33;border-bottom:1px solid #2a3c54}
+header h1{margin:0;color:#38bdf8;font-size:24px;letter-spacing:1px}
+header p{color:#94a3b8;font-size:11px;letter-spacing:2px;margin:4px 0 0}
+header .sub{font-size:11px;color:#64748b;margin-top:4px;font-weight:bold}
 main{padding:14px}
-h2{font-size:17px;margin-top:15px;color:#e2e8f0}
+h2{font-size:16px;margin-top:18px;color:#f8fafc;border-left:3px solid #38bdf8;padding-left:8px}
 
-.add-panel{background:#172438;padding:15px;border-radius:10px;border:1px solid #3b4d66;margin-bottom:15px}
-.add-panel h3{margin:0 0 10px;font-size:15px;color:#45b8f5}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:15px}
+.kpi-card{background:#15233b;padding:12px;border-radius:8px;border:1px solid #283a54;text-align:center}
+.kpi-card span{display:block;font-size:10px;color:#94a3b8;text-transform:uppercase}
+.kpi-card strong{display:block;font-size:16px;color:#38bdf8;margin-top:4px}
+
+.add-panel{background:#131f33;padding:15px;border-radius:10px;border:1px solid #283a54;margin-bottom:15px}
+.add-panel h3{margin:0 0 12px;font-size:15px;color:#38bdf8}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.form-grid input, .form-grid select{padding:10px;border-radius:6px;border:1px solid #334358;background:#0d1522;color:white;font-size:13px;outline:none}
-.form-grid input:focus, .form-grid select:focus{border-color:#45b8f5}
+.form-grid input, .form-grid select{padding:10px;border-radius:6px;border:1px solid #2a3c54;background:#0a101d;color:white;font-size:13px;outline:none}
+.form-grid input:focus, .form-grid select:focus{border-color:#38bdf8}
 .full-width{grid-column:1 / -1}
-.btn-action{background:#3b82f6;color:white;font-weight:bold;padding:10px;border:0;border-radius:6px;cursor:pointer;font-size:12px}
-.btn-add{background:#10b981;color:#042f2e;font-weight:bold;padding:12px;border:0;border-radius:6px;cursor:pointer;margin-top:8px;width:100%}
+.btn-action{background:#0284c7;color:white;font-weight:bold;padding:10px;border:0;border-radius:6px;cursor:pointer;font-size:12px}
+.btn-add{background:#10b981;color:#022c22;font-weight:bold;padding:12px;border:0;border-radius:6px;cursor:pointer;margin-top:8px;width:100%;font-size:13px}
 
 .search-container{display:flex;gap:8px;margin:10px 0}
-.search-container input{flex:1;padding:12px;border-radius:8px;border:1px solid #3b4d66;background:#182638;color:white;font-size:14px;outline:none}
-.search-container input:focus{border-color:#45b8f5}
+.search-container input{flex:1;padding:12px;border-radius:8px;border:1px solid #2a3c54;background:#131f33;color:white;font-size:14px;outline:none}
+.search-container input:focus{border-color:#38bdf8}
 
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-button.filter{border:0;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer;background:#27364b;color:white;font-size:12px}
-button.filter.active{background:#45b8f5;color:#071421}
+button.filter{border:0;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer;background:#1e2d45;color:white;font-size:12px}
+button.filter.active{background:#38bdf8;color:#0f172a}
 
-#map{height:48vh;min-height:340px;border-radius:12px;border:1px solid #45566e}
+#map{height:50vh;min-height:360px;border-radius:12px;border:1px solid #2a3c54}
 .legend{display:flex;gap:15px;flex-wrap:wrap;margin:10px 0;font-size:12px;color:#cbd5e1}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
-.blue{background:#299cff}
-.green{background:#18c77a}
+.blue{background:#38bdf8}
+.green{background:#22c55e}
 
 .counter{font-size:13px;color:#94a3b8;margin:10px 0}
-.card{background:#19283b;padding:15px;border-radius:10px;margin:10px 0;border:1px solid #30435c}
-.card h3{margin:0 0 6px;font-size:15px;color:#f1f5f9}
-.card p{font-size:12px;color:#b9c8da;margin:5px 0}
-.card a{color:#38bdf8;text-decoration:none;font-size:12px}
+.card{background:#131f33;padding:15px;border-radius:10px;margin:10px 0;border:1px solid #283a54}
+.card h3{margin:0 0 6px;font-size:15px;color:#f8fafc}
+.card p{font-size:12px;color:#cbd5e1;margin:4px 0}
+.card .financials{background:#0a101d;padding:8px;border-radius:6px;margin:8px 0;border:1px solid #1e2d45}
+.card .financials span{display:inline-block;margin-right:12px;font-size:11px;color:#38bdf8;font-weight:bold}
 .tag{font-size:10px;padding:3px 7px;border-radius:4px;font-weight:bold;display:inline-block;margin-bottom:6px}
-.tag-premium{background:#1d4ed8;color:#dbeafe}
+.tag-premium{background:#1e40af;color:#dbeafe}
 .tag-mcmv{background:#15803d;color:#dcfce7}
-.btn-map{background:#27364b;color:white;border:1px solid #45566e;padding:8px 12px;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:8px;font-size:12px}
+.btn-map{background:#1e2d45;color:white;border:1px solid #3b82f6;padding:8px 12px;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:8px;font-size:12px;width:100%}
 
-footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#19283b;color:white}
+footer{text-align:center;padding:20px;color:#64748b;font-size:11px}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#131f33;color:white}
 </style>
 </head>
 
 <body>
 <header>
 <h1>JGSCORP</h1>
-<p>REAL ESTATE INTELLIGENCE</p>
-<div class="sub">PORTO ALEGRE • RIO GRANDE DO SUL</div>
+<p>PLATAFORMA DE INTELIGÊNCIA IMOBILIÁRIA</p>
+<div class="sub">PORTO ALEGRE • PROSPECÇÃO E ANÁLISE DE TERRENOS</div>
 </header>
 
 <main>
-<!-- PAINEL DE ADIÇÃO RÁPIDA DE TERRENOS -->
+<!-- DASHBOARD DE INDICADORES -->
+<div class="kpi-grid">
+<div class="kpi-card">
+<span>Total Áreas</span>
+<strong id="kpiTotal">0</strong>
+</div>
+<div class="kpi-card">
+<span>Alto Padrão</span>
+<strong id="kpiPremium">0</strong>
+</div>
+<div class="kpi-card">
+<span>MCMV</span>
+<strong id="kpiMcmv">0</strong>
+</div>
+</div>
+
+<!-- PAINEL DE CADASTRO COMPLETO -->
 <div class="add-panel">
-<h3>➕ Mapear Novo Terreno</h3>
+<h3>➕ Mapear Terreno com Estudo de Viabilidade</h3>
 <form id="addForm" onsubmit="adicionarTerreno(event)" class="form-grid">
 <input type="text" id="addNome" placeholder="Nome / Identificação da Área" required class="full-width">
 <input type="text" id="addEndereco" placeholder="Endereço / Rua / Bairro (ex: Av. Juca Batista, Ipanema)" class="full-width" required>
-<button type="button" class="btn-action full-width" onclick="buscarCoordenadasForm()">📍 Buscar Coordenadas Automaticamente</button>
-<input type="text" id="addArea" placeholder="Área (ex: 3.500 m²)" required>
+<button type="button" class="btn-action full-width" onclick="buscarCoordenadasForm()">📍 Capturar Coordenadas Automaticamente</button>
+<input type="number" id="addAreaM2" placeholder="Área Total (m² ex: 3500)" required>
 <select id="addTipo" required>
 <option value="premium">Alto Padrão</option>
 <option value="mcmv">Minha Casa Minha Vida (MCMV)</option>
 </select>
+<input type="number" id="addValorPedido" placeholder="Valor Pedido R$ (opcional)">
+<input type="number" id="addVgvEstimado" placeholder="VGV Estimado R$ (opcional)">
 <input type="number" step="any" id="addLat" placeholder="Latitude" required>
 <input type="number" step="any" id="addLon" placeholder="Longitude" required>
 <input type="text" id="addLink" placeholder="Link do anúncio / Fonte (opcional)" class="full-width">
-<input type="text" id="addDesc" placeholder="Observações de prospecção / Zoneamento" class="full-width">
-<button type="submit" class="btn-add">Mapear Área no Sistema</button>
+<input type="text" id="addDesc" placeholder="Observações Técnicas / Topografia / Zoneamento" class="full-width">
+<button type="submit" class="btn-add">Mapear & Salvar no Banco de Dados</button>
 </form>
 </div>
 
-<h2>Navegar & Ir para Qualquer Lugar</h2>
+<h2>Geolocalização & Navegação Urbana</h2>
 
 <div class="search-container">
-<input type="text" id="placeInput" onkeypress="if(event.key==='Enter') buscarLugarNoMapa()" placeholder="🔍 Digite qualquer rua ou bairro (ex: Juca Batista, Tristeza)...">
-<button class="btn-action" onclick="buscarLugarNoMapa()">Buscar Lugar</button>
+<input type="text" id="placeInput" onkeypress="if(event.key==='Enter') buscarLugarNoMapa()" placeholder="🔍 Pesquisar rua, bairro ou ponto de interesse em Porto Alegre...">
+<button class="btn-action" onclick="buscarLugarNoMapa()">Navegar</button>
 </div>
 
 <div class="filters">
-<button class="filter active" onclick="setCategory('both',this)">Todas as Categorias</button>
+<button class="filter active" onclick="setCategory('both',this)">Todas as Áreas</button>
 <button class="filter" onclick="setCategory('premium',this)">Alto Padrão</button>
 <button class="filter" onclick="setCategory('mcmv',this)">MCMV</button>
 </div>
@@ -103,14 +127,14 @@ footer{text-align:center;padding:20px;color:#8597ad;font-size:11px}
 
 <div id="map"></div>
 
-<h2>Oportunidades Cadastradas</h2>
+<h2>Portfólio de Oportunidades Cadastradas</h2>
 <div class="counter" id="counterText">Carregando terrenos...</div>
 <div id="results"></div>
 </main>
 
 <footer>
-JGSCORP © 2026 | INTELIGÊNCIA TERRITORIAL<br>
-Sistema dinâmico de prospecção e análise de glebas urbanas.
+JGSCORP © 2026 | INTELIGÊNCIA TERRITORIAL PORTO ALEGRE<br>
+Ferramenta executiva de análise de viabilidade e prospecção urbana.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -118,69 +142,43 @@ Sistema dinâmico de prospecção e análise de glebas urbanas.
 <script>
 const map=L.map('map').setView([-30.0900,-51.2000],11);
 
-L.tileLayer(
-'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-{attribution:'Tiles © Esri',maxZoom:19}
-).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+attribution:'Tiles © Esri',maxZoom:19
+}).addTo(map);
 
-L.tileLayer(
-'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-{attribution:'Labels © Esri',maxZoom:19}
-).addTo(map);
+L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{
+attribution:'Labels © Esri',maxZoom:19
+}).addTo(map);
 
 let searchMarker = null;
 
-let terrenos=[
-{
-id:1,tipo:'premium',nome:'Gleba Residencial — Orla Zona Sul',
-bairro:'Ipanema',area:'2.500 m²',lat:-30.1270,lon:-51.2200,link:'',
-descricao:'Apto para condomínio horizontal de alto padrão com vista para o Guaíba.'
-},
-{
-id:2,tipo:'premium',nome:'Gleba Comercial/Residencial — Av. Juca Batista',
-bairro:'Ipanema / Juca Batista',area:'3.200 m²',lat:-30.1310,lon:-51.2150,link:'',
-descricao:'Excelente frente comercial na Av. Juca Batista ideal para empreendimento misto.'
-},
-{
-id:3,tipo:'premium',nome:'Área de Incorporação — Tristeza',
-bairro:'Tristeza',area:'1.800 m²',lat:-30.1150,lon:-51.2500,link:'',
-descricao:'Área urbana ideal para edifício residencial de médio/alto padrão.'
-},
-{
-id:4,tipo:'mcmv',nome:'Gleba Extensa — Restinga',
-bairro:'Restinga',area:'8.000 m²',lat:-30.1400,lon:-51.1360,link:'',
-descricao:'Área extensa com potencial para grande condomínio MCMV.'
-},
-{
-id:5,tipo:'mcmv',nome:'Área Construtiva — Lomba do Pinheiro',
-bairro:'Lomba do Pinheiro',area:'6.500 m²',lat:-30.1050,lon:-51.1350,link:'',
-descricao:'Terreno plano com viabilidade para habitação de interesse social.'
-},
-{
-id:6,tipo:'mcmv',nome:'Gleba Urbana — Hípica / Juca Batista',
-bairro:'Hípica',area:'5.200 m²',lat:-30.1350,lon:-51.1850,link:'',
-descricao:'Eixo de expansão urbana acelerada no corredor da Juca Batista.'
-},
-{
-id:7,tipo:'premium',nome:'Área Residencial — Aberta dos Morros',
-bairro:'Aberta dos Morros',area:'3.400 m²',lat:-30.1450,lon:-51.1950,link:'',
-descricao:'Excelente topografia para vilas residenciais fechadas.'
-},
-{
-id:8,tipo:'premium',nome:'Área de Estudo — Cavalhada',
-bairro:'Cavalhada',area:'2.100 m²',lat:-30.1080,lon:-51.2250,link:'',
-descricao:'Frente para corredor comercial com viabilidade mista.'
-},
-{
-id:9,tipo:'mcmv',nome:'Terreno de Esquina — Otto Niemeyer',
-bairro:'Otto Niemeyer',area:'1.950 m²',lat:-30.1010,lon:-51.2320,link:'',
-descricao:'Excelente localização para condomínio residencial vertical econômico.'
-}
+// BANCO DE DADOS BASE
+const dadosIniciais = [
+{id:1,tipo:'premium',nome:'Gleba Orla Zona Sul',bairro:'Ipanema',areaM2:2500,valorPedido:3500000,vgvEstimado:28000000,lat:-30.1270,lon:-51.2200,link:'',descricao:'Excelente visibilidade para condomínio horizontal fechado ou condomínio de alto padrão.'},
+{id:2,tipo:'premium',nome:'Corredor Comercial Juca Batista',bairro:'Ipanema / Juca Batista',areaM2:3200,valorPedido:4200000,vgvEstimado:35000000,lat:-30.1310,lon:-51.2150,link:'',descricao:'Frente comercial ampla ideal para empreendimento residencial misto no eixo Juca Batista.'},
+{id:3,tipo:'premium',nome:'Área Urbana Tristeza',bairro:'Tristeza',areaM2:1800,valorPedido:2900000,vgvEstimado:22000000,lat:-30.1150,lon:-51.2500,link:'',descricao:'Miolo nobre da Tristeza com viabilidade imediata para residencial vertical.'},
+{id:4,tipo:'mcmv',nome:'Gleba Extensa Restinga',bairro:'Restinga',areaM2:8000,valorPedido:2100000,vgvEstimado:26000000,lat:-30.1400,lon:-51.1360,link:'',descricao:'Terreno amplo com perfil perfeito para empreendimento MCMV de grande porte.'},
+{id:5,tipo:'mcmv',nome:'Área Construtiva Lomba do Pinheiro',bairro:'Lomba do Pinheiro',areaM2:6500,valorPedido:1800000,vgvEstimado:20000000,lat:-30.1050,lon:-51.1350,link:'',descricao:'Excelente topografia plana com viabilidade para habitação de interesse social.'},
+{id:6,tipo:'mcmv',nome:'Eixo Hípica / Juca Batista',bairro:'Hípica',areaM2:5200,valorPedido:2400000,vgvEstimado:24000000,lat:-30.1350,lon:-51.1850,link:'',descricao:'Eixo de forte vetor de crescimento residencial na Zona Sul.'}
 ];
+
+// LEITURA DO LOCALSTORAGE
+let terrenos = JSON.parse(localStorage.getItem('jgscorp_terrenos')) || dadosIniciais;
 
 let categoryFilter='both';
 let textSearchFilter='';
 let markers=[];
+
+function formatarMoeda(val){
+if(!val || isNaN(val)) return 'Sob Consulta';
+return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(val);
+}
+
+function atualizarKPIs(){
+document.getElementById('kpiTotal').innerText = terrenos.length;
+document.getElementById('kpiPremium').innerText = terrenos.filter(t=>t.tipo==='premium').length;
+document.getElementById('kpiMcmv').innerText = terrenos.filter(t=>t.tipo==='mcmv').length;
+}
 
 function render(){
 markers.forEach(m=>map.removeLayer(m));
@@ -189,6 +187,7 @@ const results=document.getElementById('results');
 const counterText=document.getElementById('counterText');
 
 results.innerHTML='';
+atualizarKPIs();
 
 const filtered=terrenos.filter(t=>{
 const matchCategory = (categoryFilter==='both'||t.tipo===categoryFilter);
@@ -199,21 +198,19 @@ t.descricao.toLowerCase().includes(textSearchFilter);
 return matchCategory && matchText;
 });
 
-counterText.innerText = `${filtered.length} área(s) localizada(s)`;
+counterText.innerText = `${filtered.length} área(s) no portfólio selecionado`;
 
 filtered.forEach(t=>{
-const color=t.tipo==='premium'?'#299cff':'#18c77a';
+const color=t.tipo==='premium'?'#38bdf8':'#22c55e';
 
 const marker=L.circleMarker([t.lat,t.lon],{
 radius:10,color:color,fillColor:color,fillOpacity:.9,weight:2
 }).addTo(map);
 
-let popupContent = '<b>'+t.nome+'</b><br>Bairro: <b>'+t.bairro+'</b>'+
-'<br>Área: '+t.area+
-'<br><br>'+t.descricao;
+let popupContent = `<b>${t.nome}</b><br>Bairro: <b>${t.bairro}</b><br>Área: <b>${t.areaM2} m²</b><br>VGV Est.: <b>${formatarMoeda(t.vgvEstimado)}</b><br><br>${t.descricao}`;
 
 if(t.link){
-popupContent += '<br><br><a href="'+t.link+'" target="_blank" style="color:#38bdf8">🔗 Ver Anúncio Original</a>';
+popupContent += `<br><br><a href="${t.link}" target="_blank" style="color:#38bdf8">🔗 Ver Anúncio Original</a>`;
 }
 
 marker.bindPopup(popupContent);
@@ -221,24 +218,29 @@ markers.push(marker);
 
 const card=document.createElement('div');
 card.className='card';
-card.innerHTML=
-'<h3>'+t.nome+'</h3>'+
-'<span class="tag '+(t.tipo==='premium'?'tag-premium':'tag-mcmv')+'">'+(t.tipo==='premium'?'ALTO PADRÃO':'MCMV')+'</span>'+
-'<p><b>Bairro:</b> '+t.bairro+' | <b>Área:</b> '+t.area+'</p>'+
-'<p>'+t.descricao+'</p>'+
-(t.link ? '<p><a href="'+t.link+'" target="_blank">🔗 Acessar Fonte / Anúncio</a></p>' : '')+
-'<button class="btn-map">Focar no Mapa</button>';
+card.innerHTML= `
+<h3>${t.nome}</h3>
+<span class="tag ${t.tipo==='premium'?'tag-premium':'tag-mcmv'}">${t.tipo==='premium'?'ALTO PADRÃO':'MCMV'}</span>
+<p><b>Bairro/Local:</b> ${t.bairro} | <b>Área Total:</b> ${t.areaM2} m²</p>
+<div class="financials">
+<span>Ped.: ${formatarMoeda(t.valorPedido)}</span>
+<span>VGV Est.: ${formatarMoeda(t.vgvEstimado)}</span>
+</div>
+<p>${t.descricao}</p>
+${t.link ? `<p><a href="${t.link}" target="_blank" style="color:#38bdf8;font-size:12px;text-decoration:none">🔗 Acessar Link da Fonte</a></p>` : ''}
+<button class="btn-map">Focar Terreno no Mapa</button>
+`;
 
 card.querySelector('button').onclick=()=>{
-map.setView([t.lat,t.lon],15);
+map.setView([t.lat,t.lon],16);
 marker.openPopup();
-window.scrollTo({top: 300, behavior: 'smooth'});
+window.scrollTo({top: 400, behavior: 'smooth'});
 };
 results.appendChild(card);
 });
 
 if(filtered.length===0){
-results.innerHTML='<p style="color:#788b9e;padding:10px 0;">Nenhum terreno cadastrado nesta região ou filtro.</p>';
+results.innerHTML='<p style="color:#64748b;padding:10px 0;">Nenhuma área encontrada para os critérios selecionados.</p>';
 }
 }
 
@@ -264,31 +266,29 @@ const query = encodeURIComponent(input + ', Porto Alegre, RS, Brasil');
 const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
 
 try{
-const res = await fetch(url, {
-headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
-});
+const res = await fetch(url,{headers:{'Accept-Language':'pt-BR,pt;q=0.9'}});
 const data = await res.json();
 
 if(data && data.length > 0){
 const lat = parseFloat(data[0].lat);
 const lon = parseFloat(data[0].lon);
 
-map.setView([lat, lon], 14);
+map.setView([lat, lon], 15);
 
 if(searchMarker) map.removeLayer(searchMarker);
 searchMarker = L.marker([lat, lon]).addTo(map)
-.bindPopup(`<b>Ponto de Referência Pesquisado:</b><br>${data[0].display_name}`)
+.bindPopup(`<b>Local Pesquisado:</b><br>${data[0].display_name}`)
 .openPopup();
 }
 }catch(err){
-console.log('Erro na geocodificação:', err);
+console.log('Erro ao buscar geocodificação:', err);
 }
 }
 
 async function buscarCoordenadasForm(){
 const endereco = document.getElementById('addEndereco').value.trim();
 if(!endereco){
-alert('Digite o endereço/bairro primeiro.');
+alert('Digite o endereço ou bairro primeiro.');
 return;
 }
 
@@ -296,44 +296,57 @@ const query = encodeURIComponent(endereco + ', Porto Alegre, RS, Brasil');
 const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
 
 try{
-const res = await fetch(url, {
-headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' }
-});
+const res = await fetch(url,{headers:{'Accept-Language':'pt-BR,pt;q=0.9'}});
 const data = await res.json();
 
 if(data && data.length > 0){
 document.getElementById('addLat').value = data[0].lat;
 document.getElementById('addLon').value = data[0].lon;
-alert('Coordenadas encontradas e preenchidas!');
+alert('Coordenadas capturadas com sucesso!');
 } else {
-alert('Não foi possível localizar as coordenadas desse endereço.');
+alert('Não foi possível localizar as coordenadas. Preencha manualmente se necessário.');
 }
 }catch(err){
-alert('Erro ao buscar coordenadas.');
+alert('Erro na busca de coordenadas.');
 }
 }
 
 function adicionarTerreno(e){
 e.preventDefault();
+
+const areaNum = parseFloat(document.getElementById('addAreaM2').value) || 0;
+const valorPed = parseFloat(document.getElementById('addValorPedido').value) || 0;
+let vgvNum = parseFloat(document.getElementById('addVgvEstimado').value) || 0;
+
+// Cálculo estimativo automatizado caso VGV não seja informado
+if(!vgvNum && areaNum > 0){
+const m2VgvMedio = document.getElementById('addTipo').value === 'premium' ? 8000 : 4000;
+vgvNum = areaNum * m2VgvMedio;
+}
+
 const novo = {
 id: Date.now(),
 nome: document.getElementById('addNome').value,
 bairro: document.getElementById('addEndereco').value,
-area: document.getElementById('addArea').value,
+areaM2: areaNum,
 tipo: document.getElementById('addTipo').value,
+valorPedido: valorPed,
+vgvEstimado: vgvNum,
 lat: parseFloat(document.getElementById('addLat').value),
 lon: parseFloat(document.getElementById('addLon').value),
 link: document.getElementById('addLink').value,
-descricao: document.getElementById('addDesc').value || 'Área adicionada via prospecção direta.'
+descricao: document.getElementById('addDesc').value || 'Área mapeada via prospecção direta.'
 };
 
 terrenos.unshift(novo);
+localStorage.setItem('jgscorp_terrenos', JSON.stringify(terrenos));
+
 document.getElementById('addForm').reset();
 textSearchFilter = '';
 render();
 
-map.setView([novo.lat, novo.lon], 15);
-alert('Terreno mapeado com sucesso!');
+map.setView([novo.lat, novo.lon], 16);
+alert('Área e estudo de viabilidade salvos com sucesso!');
 }
 
 render();
